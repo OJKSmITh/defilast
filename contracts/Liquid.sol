@@ -18,7 +18,10 @@ contract Liquid {
     uint256 private totalLpAmount;
     uint256 private withdrawArb;
     uint256 private withdrawAsd;
-
+    uint256 public lpcalc;
+    uint256 public count3;
+    uint256 public count4;
+    uint256 public totalAmount;
     uint decimals = 100000000000000000;
 
     /** 
@@ -227,17 +230,27 @@ contract Liquid {
                 (SelfToken(_token2).balanceOf(address(this)) / (10 ** count2)))
                 .sqrt();
         }
-        uint256 count3 = getDigitCount(
+        count3 = getDigitCount(
             SelfToken(_token1).balanceOf(address(this)) + amount1
         );
-        uint256 count4 = getDigitCount(
+        count4 = getDigitCount(
             SelfToken(_token2).balanceOf(address(this)) + amount2
         );
-        uint totalAmount = ((SelfToken(_token1).balanceOf(address(this)) +
-            amount1) / (10 ** count3)) *
-            ((SelfToken(_token2).balanceOf(address(this)) + amount2) /
-                (10 ** count4));
+        if (count3 < count4) {
+            totalAmount =
+                ((SelfToken(_token1).balanceOf(address(this)) + amount1) /
+                    (10 ** count3)) *
+                (((SelfToken(_token2).balanceOf(address(this)) + amount2) /
+                    (10 ** count4)) * (10 ** (count4 - count3)));
+        } else if (count3 > count4) {
+            totalAmount =
+                (((SelfToken(_token1).balanceOf(address(this)) + amount1) /
+                    (10 ** count3)) * (10 ** (count3 - count4))) *
+                ((SelfToken(_token2).balanceOf(address(this)) + amount2) /
+                    (10 ** count4));
+        }
         uint totallpAmount = totalAmount.sqrt() - previousLp;
+        lpcalc = totallpAmount;
         return totallpAmount;
     }
 
@@ -316,6 +329,6 @@ contract Liquid {
             number = number / 10;
         }
 
-        return digitCount;
+        return digitCount - 1;
     }
 }

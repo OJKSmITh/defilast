@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "./SelfToken.sol";
 import "./timelock.sol";
-import "./Factory.sol";
+import "./Factory_v1.sol";
 
 contract Governance {
     address private owner;
@@ -40,7 +40,10 @@ contract Governance {
     }
 
     function propose(address _proposer, bytes memory _callData) public {
-        require(SelfToken(govToken).balanceOf(_proposer) > 0, "Governance : Do not have a vASD token.");
+        require(
+            SelfToken(govToken).balanceOf(_proposer) > 0,
+            "Governance : Do not have a vASD token."
+        );
 
         uint startBlock = block.number;
         uint endBlock = block.number + 17280;
@@ -59,8 +62,14 @@ contract Governance {
     }
 
     function voting(address _participant, uint _proposal, bool _agree) public {
-        require(SelfToken(govToken).balanceOf(_participant) > 0, "Governance : Do not have a vASD token.");
-        require(proposes[_proposal].hasVotes[_participant].vote == false, "Governance : It is a proposal that has already been voted on.");
+        require(
+            SelfToken(govToken).balanceOf(_participant) > 0,
+            "Governance : Do not have a vASD token."
+        );
+        require(
+            proposes[_proposal].hasVotes[_participant].vote == false,
+            "Governance : It is a proposal that has already been voted on."
+        );
         // require(proposes[_proposal].endBlock > block.number, "Governance : It's an overdue vote.");
         proposes[_proposal].hasVotes[_participant] = Receipt(true, _agree);
         votes[_proposal].push(_participant);
@@ -76,14 +85,21 @@ contract Governance {
             proposes[_proposal].executed = true;
 
             if (proposes[_proposal].callData.length % 2 != 0) {
-
-            bytes memory paddedCallData = abi.encodePacked(proposes[_proposal].callData);
-            proposes[_proposal].callData = paddedCallData;
-            Timelock(timelock).queueTransaction(paddedCallData, block.timestamp);
-            return true;
+                bytes memory paddedCallData = abi.encodePacked(
+                    proposes[_proposal].callData
+                );
+                proposes[_proposal].callData = paddedCallData;
+                Timelock(timelock).queueTransaction(
+                    paddedCallData,
+                    block.timestamp
+                );
+                return true;
             } else {
-            Timelock(timelock).queueTransaction(proposes[_proposal].callData, block.timestamp);
-            return true;
+                Timelock(timelock).queueTransaction(
+                    proposes[_proposal].callData,
+                    block.timestamp
+                );
+                return true;
             }
         } else {
             proposes[_proposal].canceled = true;
@@ -106,13 +122,26 @@ contract Governance {
             }
         */
     }
-    
-    function proposalExecute(uint _proposal) public returns(bool){
+
+    function proposalExecute(uint _proposal) public returns (bool) {
         require(msg.sender == owner, "Governance : only owner");
         // require(proposes[_proposal].endBlock < block.number, "Governance : It hasn't been three days.");
-        require(proposes[_proposal].executed, "Governance : It's a vote that didn't pass.");
-        require(Timelock(timelock).executeTransaction(proposes[_proposal].callData, block.timestamp), "Governance : Timelock is running.");
-        require(Timelock(timelock).getTransaction(proposes[_proposal].callData).status);
+        require(
+            proposes[_proposal].executed,
+            "Governance : It's a vote that didn't pass."
+        );
+        require(
+            Timelock(timelock).executeTransaction(
+                proposes[_proposal].callData,
+                block.timestamp
+            ),
+            "Governance : Timelock is running."
+        );
+        require(
+            Timelock(timelock)
+                .getTransaction(proposes[_proposal].callData)
+                .status
+        );
         //proposes.callData 실행시켜야함
         return true;
     }
@@ -155,7 +184,7 @@ contract Governance {
         );
     }
 
-    function getCallData(uint _proposal)public view returns (bytes memory){
+    function getCallData(uint _proposal) public view returns (bytes memory) {
         return proposes[_proposal].callData;
     }
 }

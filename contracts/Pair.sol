@@ -60,19 +60,15 @@ contract Pair {
             poolData[_contractAddress][poolIndex] = newPool;
             poolDataNum.push(poolIndex);
             poolIndex += 1;
-            if (keccak256(bytes(_tokenName)) == keccak256(bytes("ARB"))) {
+            if (Strings.equal(_tokenName, "ARB")) {
                 ArbLpToken = new SelfToken("ARBLP", "LP");
                 ArbLpaddress = address(ArbLpToken);
                 // ARBtokenAddress = _token1;
-            } else if (
-                keccak256(bytes(_tokenName)) == keccak256(bytes("USDT"))
-            ) {
+            } else if (Strings.equal(_tokenName, "USDT")) {
                 UsdtLpToken = new SelfToken("USDTLP", "LP");
                 UsdtLpaddress = address(UsdtLpToken);
                 // USDTtokenAddress = _token1;
-            } else if (
-                keccak256(bytes(_tokenName)) == keccak256(bytes("ETH"))
-            ) {
+            } else if (Strings.equal(_tokenName, "ETH")) {
                 EthLpToken = new SelfToken("ETHLP", "LP");
                 EthLpaddress = address(UsdtLpToken);
                 // ETHtokenAddress = _token1;

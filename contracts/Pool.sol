@@ -31,12 +31,7 @@ contract Pool {
     // uint256 public withdrawAsd;
     // uint256 public totalLpAmount;
     // bool public isPossible;
-    uint256 public firstNum;
-    uint256 public secondNum;
-    address public firstTokenName;
-    uint256 public firstTokenMon;
-    uint256 public firstAmount;
-    uint256 public secondAmount;
+
     uint256 public digiCount;
     bool public isPossible;
     // address public withdrawName;
@@ -169,15 +164,6 @@ contract Pool {
             _userAccount,
             _factoryAddress
         );
-        (
-            firstNum,
-            secondNum,
-            firstTokenName,
-            firstTokenMon,
-            firstAmount,
-            secondAmount
-        ) = IStaking(stakingAddress).getValue1();
-        (isPossible) = IStaking(stakingAddress).getValue2();
     }
 
     function getDigitCount(uint256 number) public returns (uint256) {

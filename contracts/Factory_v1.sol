@@ -200,6 +200,5 @@ contract Factory_v1 {
     function withDrawStaking() public {
         address userAccount = msg.sender;
         pool.differLpWithdraw(userAccount, factoryAddress);
-        backAmount = pool.firstAmount();
     }
 }

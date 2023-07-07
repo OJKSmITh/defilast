@@ -22,9 +22,9 @@ const config: HardhatUserConfig = {
       gasPrice: 250000000000
     },
     abitrum: {
-      url:"https://endpoints.omniatech.io/v1/arbitrum/goerli/public",
+      url:"https://arbitrum-goerli.publicnode.com",
       chainId:421613,
-      accounts : require("./accounts.json").privateKey,
+      accounts : require("./accounts.json").privatekey,
       gas:20000000,
       gasPrice: 25000000000
     },
