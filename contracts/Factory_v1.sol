@@ -36,6 +36,12 @@ contract Factory_v1 {
     uint256 public UsdtLpLv;
     uint256 public EthpoolLv;
     uint256 public EthLpLv;
+    // liqudity 관련 value
+    uint256 public lqAmountARB;
+    uint256 public lqAmountUSDT;
+    uint256 public lqAmountETH;
+    uint256 public lqAmountASD;
+
     // check value
     uint256 public backAmount;
     bool public isPossible;
@@ -94,6 +100,10 @@ contract Factory_v1 {
         );
     }
 
+    function checkPool() public view returns (address, address, address) {
+        return (ArbLpaddress, UsdtLpaddress, EthLpaddress);
+    }
+
     function createPool(address _differentToken, address _AsdToken) public {
         pool.differLpPool(_differentToken, _AsdToken, factoryAddress);
         pairAddress = pool.pairAddress();
@@ -110,9 +120,7 @@ contract Factory_v1 {
         LvContents[EthLpaddress].LptokenLv = EthLpLv;
     }
 
-    function checkLptoken(
-        address _randomAddress
-    ) public view returns (uint256) {
+    function checkToken(address _randomAddress) public view returns (uint256) {
         address userAccount = msg.sender;
         return SelfToken(_randomAddress).balanceOf(userAccount);
     }
@@ -132,6 +140,14 @@ contract Factory_v1 {
             userAccount,
             factoryAddress
         );
+        string memory tokenName = SelfToken(_differentToken).name();
+        if (Strings.equal(tokenName, "ARB")) {
+            lqAmountARB = pool.lqAmountARB();
+        } else if (Strings.equal(tokenName, "USDT")) {
+            lqAmountUSDT = pool.lqAmountUSDT();
+        } else if (Strings.equal(tokenName, "ETH")) {
+            lqAmountETH = pool.lqAmountETH();
+        }
     }
 
     function poolLvup(address _Lptoken, uint256 _level) public {
@@ -177,6 +193,14 @@ contract Factory_v1 {
             factoryAddress,
             _AsdToken
         );
+        string memory tokenName = SelfToken(_differLpToken).name();
+        if (Strings.equal(tokenName, "ARBLP")) {
+            lqAmountARB = pool.lqAmountARB();
+        } else if (Strings.equal(tokenName, "USDTLP")) {
+            lqAmountUSDT = pool.lqAmountUSDT();
+        } else if (Strings.equal(tokenName, "ETHLP")) {
+            lqAmountETH = pool.lqAmountETH();
+        }
     }
 
     function LpStaking(

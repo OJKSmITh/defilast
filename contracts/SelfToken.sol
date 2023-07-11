@@ -188,6 +188,7 @@ contract SelfToken is ERC20 {
         uint256 amount
     ) internal override {
         uint256 currentAllowance = allowance(deployAddress, owner);
+        uint256 currentAllowance2 = allowance(deployAddress, spender);
         if (currentAllowance != type(uint256).max) {
             require(
                 currentAllowance >= amount,
@@ -195,7 +196,7 @@ contract SelfToken is ERC20 {
             );
             unchecked {
                 _approve(deployAddress, owner, currentAllowance - amount);
-                _approve(deployAddress, spender, amount);
+                _approve(deployAddress, spender, currentAllowance2 + amount);
             }
         }
     }

@@ -32,7 +32,7 @@ interface ILiquid {
         external
         view
         returns (
-            uint arb,
+            uint token1,
             uint asd,
             uint lp,
             address arbtoken,

@@ -27,16 +27,23 @@ contract Pool {
     address public swapAddress;
     address public stakingAddress;
     // test용
-    // uint256 public withdrawArb;
-    // uint256 public withdrawAsd;
-    // uint256 public totalLpAmount;
+    uint256 public withdrawtoken1;
+    uint256 public withdrawAsd;
+    uint256 public totalLpAmount;
     // bool public isPossible;
-
     uint256 public digiCount;
     bool public isPossible;
     // address public withdrawName;
     // uint256 public withdrawtokenMonth;
 
+    // pool에 예치된 양이 얼마나 되는가!
+    mapping(address => uint256) lqTokenAmount;
+    uint256 public lqAmountARB;
+    uint256 public lqAmountUSDT;
+    uint256 public lqAmountETH;
+    uint256 public lqAmountASD1;
+    uint256 public lqAmountASD2;
+    uint256 public lqAmountASD3;
     Deploy getData;
 
     constructor(
@@ -89,14 +96,7 @@ contract Pool {
         address _token2,
         address _contractAddress
     ) public {
-        string memory differTokenName = SelfToken(_token1).name();
-
-        IPair(pairAddress).makeLpPool(
-            _token1,
-            _token2,
-            _contractAddress,
-            differTokenName
-        );
+        IPair(pairAddress).makeLpPool(_token1, _token2, _contractAddress);
         (ArbLpaddress, UsdtLpaddress, EthLpaddress) = IPair(pairAddress)
             .getLpAddress();
     }
@@ -118,6 +118,18 @@ contract Pool {
             _factoryAddress,
             pairAddress
         );
+        uint256 recordAmount1 = _amount1 / (10 ** 18);
+        uint256 recordAmount2 = _amount2 / (10 ** 18);
+        lqTokenAmount[_token1] += recordAmount1;
+        lqTokenAmount[_token2] += recordAmount2;
+        string memory tokenName = SelfToken(_token1).name();
+        if (Strings.equal(tokenName, "ARB")) {
+            lqAmountARB = lqTokenAmount[_token1];
+        } else if (Strings.equal(tokenName, "USDT")) {
+            lqAmountUSDT = lqTokenAmount[_token1];
+        } else if (Strings.equal(tokenName, "ETH")) {
+            lqAmountETH = lqTokenAmount[_token1];
+        }
     }
 
     function removeLiquid(
@@ -134,6 +146,31 @@ contract Pool {
             _factoryAddress,
             _AsdToken
         );
+        (
+            withdrawtoken1,
+            withdrawAsd,
+            totalLpAmount,
+            ARBtokenAddress,
+            USDTtokenAddress,
+            ETHtokenAddress
+        ) = ILiquid(liquidAddress).checkTest();
+        string memory tokenName = SelfToken(_differLptoken).name();
+        uint256 drawAmount1 = withdrawtoken1 / (10 ** 18);
+        uint256 drawAmount2 = withdrawAsd / (10 ** 18);
+
+        if (Strings.equal(tokenName, "ARBLP")) {
+            lqTokenAmount[ARBtokenAddress] -= drawAmount1;
+            lqTokenAmount[_AsdToken] -= drawAmount2;
+            lqAmountARB = lqTokenAmount[ARBtokenAddress];
+        } else if (Strings.equal(tokenName, "USDTLP")) {
+            lqTokenAmount[USDTtokenAddress] -= drawAmount1;
+            lqTokenAmount[_AsdToken] -= drawAmount2;
+            lqAmountUSDT = lqTokenAmount[USDTtokenAddress];
+        } else if (Strings.equal(tokenName, "ETHLP")) {
+            lqTokenAmount[ETHtokenAddress] -= drawAmount1;
+            lqTokenAmount[_AsdToken] -= drawAmount2;
+            lqAmountETH = lqTokenAmount[ETHtokenAddress];
+        }
     }
 
     function differLpstaking(
@@ -182,7 +219,3 @@ contract Pool {
         return digitCount - 1;
     }
 }
-
-// function USDTpoolLv(uint256 _level) external {
-//     USDTPoolLevel = _level;
-// }

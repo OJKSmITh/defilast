@@ -16,12 +16,13 @@ contract Liquid {
     address private EthLpaddress;
     uint256 private previousLp;
     uint256 private totalLpAmount;
-    uint256 private withdrawArb;
+    uint256 private withdrawtoken1;
     uint256 private withdrawAsd;
     uint256 public lpcalc;
     uint256 public count3;
     uint256 public count4;
     uint256 public totalAmount;
+    uint256 private withdrawEth;
     uint decimals = 100000000000000000;
 
     /** 
@@ -80,7 +81,7 @@ contract Liquid {
             Lpcalc[ArbLpaddress][_token1] += amount1;
             Lpcalc[ArbLpaddress][_token2] += amount2;
             ARBLpReward(_userAccount, calcLp, ArbLpaddress);
-            totalLpAmount += calcLp;
+            totalLpAmount += (calcLp * (10 ** 18));
         } else if (
             keccak256(bytes(SelfToken(tokenA).name())) ==
             keccak256(bytes("USDT"))
@@ -97,7 +98,7 @@ contract Liquid {
             Lpcalc[UsdtLpaddress][_token1] += amount1;
             Lpcalc[UsdtLpaddress][_token2] += amount2;
             USDTLpReward(_userAccount, calcLp, UsdtLpaddress);
-            totalLpAmount += calcLp;
+            totalLpAmount += (calcLp * (10 ** 18));
         } else if (
             keccak256(bytes(SelfToken(tokenA).name())) ==
             keccak256(bytes("ETH"))
@@ -113,8 +114,10 @@ contract Liquid {
             );
             Lpcalc[EthLpaddress][_token1] += amount1;
             Lpcalc[EthLpaddress][_token2] += amount2;
+            withdrawEth = Lpcalc[EthLpaddress][_token1];
+            withdrawAsd = Lpcalc[EthLpaddress][_token2];
             ETHLpReward(_userAccount, calcLp, EthLpaddress);
-            totalLpAmount += calcLp;
+            totalLpAmount += (calcLp * (10 ** 18));
         } else {
             revert("Unsupported token");
         }
@@ -138,7 +141,7 @@ contract Liquid {
             keccak256(bytes(SelfToken(_lpaddress).name())) ==
             keccak256(bytes("ARBLP"))
         ) {
-            withdrawArb =
+            withdrawtoken1 =
                 (Lpcalc[_lpaddress][ARBtokenAddress] * lpcalcpercent) /
                 100;
             withdrawAsd =
@@ -146,14 +149,14 @@ contract Liquid {
                 100;
             SelfToken(_lpaddress).transferFrom(
                 _userAccount,
-                _factoryAddress,
+                _lpaddress,
                 _amount
             );
-            SelfToken(_lpaddress)._burn(_factoryAddress, _amount);
+            SelfToken(_lpaddress)._burn(_lpaddress, _amount);
             SelfToken(ARBtokenAddress).transferFrom(
                 _factoryAddress,
                 _userAccount,
-                withdrawArb
+                withdrawtoken1
             );
             SelfToken(_ASDAddress).transferFrom(
                 _factoryAddress,
@@ -164,18 +167,24 @@ contract Liquid {
             keccak256(bytes(SelfToken(_lpaddress).name())) ==
             keccak256(bytes("USDTLP"))
         ) {
-            uint256 withdrawUsdt = (Lpcalc[_lpaddress][USDTtokenAddress] *
-                lpcalcpercent) / 100;
+            withdrawtoken1 =
+                (Lpcalc[_lpaddress][USDTtokenAddress] * lpcalcpercent) /
+                100;
             withdrawAsd =
                 (Lpcalc[_lpaddress][_ASDAddress] * lpcalcpercent) /
                 100;
-
+            SelfToken(_lpaddress).transferFrom(
+                _userAccount,
+                _lpaddress,
+                _amount
+            );
             SelfToken(_lpaddress).approve(_factoryAddress, _amount);
-            SelfToken(_lpaddress)._burn(_factoryAddress, _amount);
+
+            SelfToken(_lpaddress)._burn(_lpaddress, _amount);
             SelfToken(USDTtokenAddress).transferFrom(
                 _factoryAddress,
                 _userAccount,
-                withdrawUsdt
+                withdrawtoken1
             );
             SelfToken(_ASDAddress).transferFrom(
                 _factoryAddress,
@@ -186,18 +195,23 @@ contract Liquid {
             keccak256(bytes(SelfToken(_lpaddress).name())) ==
             keccak256(bytes("ETHLP"))
         ) {
-            uint withdrawEth = (Lpcalc[_lpaddress][ETHtokenAddress] *
-                lpcalcpercent) / decimals;
+            withdrawtoken1 =
+                (Lpcalc[_lpaddress][ETHtokenAddress] * lpcalcpercent) /
+                100;
             withdrawAsd =
                 (Lpcalc[_lpaddress][_ASDAddress] * lpcalcpercent) /
-                decimals;
-
+                100;
+            SelfToken(_lpaddress).transferFrom(
+                _userAccount,
+                _lpaddress,
+                _amount
+            );
             SelfToken(_lpaddress).approve(_factoryAddress, _amount);
-            SelfToken(_lpaddress)._burn(_factoryAddress, _amount);
+            SelfToken(_lpaddress)._burn(_lpaddress, _amount);
             SelfToken(ETHtokenAddress).transferFrom(
                 _factoryAddress,
                 _userAccount,
-                withdrawEth
+                withdrawtoken1
             );
             SelfToken(_ASDAddress).transferFrom(
                 _factoryAddress,
@@ -260,11 +274,14 @@ contract Liquid {
         address _ArbLpaddress
     ) internal {
         SelfToken(_ArbLpaddress).mint(_lpamount);
-        SelfToken(_ArbLpaddress).approve(_userAccount, _lpamount);
+        SelfToken(_ArbLpaddress).approve(
+            _userAccount,
+            (_lpamount * (10 ** 18))
+        );
         SelfToken(_ArbLpaddress).transferFrom(
             ArbLpaddress,
             _userAccount,
-            _lpamount
+            (_lpamount * (10 ** 18))
         );
     }
 
@@ -274,11 +291,14 @@ contract Liquid {
         address _UsdtLpaddress
     ) internal {
         SelfToken(_UsdtLpaddress).mint(_lpamount);
-        SelfToken(_UsdtLpaddress).approve(_userAccount, _lpamount);
+        SelfToken(_UsdtLpaddress).approve(
+            _userAccount,
+            (_lpamount * (10 ** 18))
+        );
         SelfToken(_UsdtLpaddress).transferFrom(
             UsdtLpaddress,
             _userAccount,
-            _lpamount
+            (_lpamount * (10 ** 18))
         );
     }
 
@@ -288,11 +308,11 @@ contract Liquid {
         address _Ethaddress
     ) internal {
         SelfToken(_Ethaddress).mint(_lpamount);
-        SelfToken(_Ethaddress).approve(_userAccount, _lpamount);
+        SelfToken(_Ethaddress).approve(_userAccount, (_lpamount * (10 ** 18)));
         SelfToken(_Ethaddress).transferFrom(
             EthLpaddress,
             _userAccount,
-            _lpamount
+            (_lpamount * (10 ** 18))
         );
     }
 
@@ -300,7 +320,7 @@ contract Liquid {
         public
         view
         returns (
-            uint256 arb1,
+            uint256 token1,
             uint256 asd1,
             uint256 lp,
             address arbtoken,
@@ -309,7 +329,7 @@ contract Liquid {
         )
     {
         return (
-            withdrawArb,
+            withdrawtoken1,
             withdrawAsd,
             totalLpAmount,
             ARBtokenAddress,

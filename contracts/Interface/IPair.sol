@@ -6,8 +6,7 @@ interface IPair {
     function makeLpPool(
         address _token1,
         address _token2,
-        address _contractAddress,
-        string memory _tokenName
+        address _contractAddress
     ) external;
 
     function getLpAddress()

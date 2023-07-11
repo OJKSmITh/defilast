@@ -9,16 +9,17 @@ contract Pair {
     SelfToken ArbLpToken;
     SelfToken UsdtLpToken;
     SelfToken EthLpToken;
-    address private ArbLpaddress;
-    address private UsdtLpaddress;
-    address private EthLpaddress;
+    address public ArbLpaddress;
+    address public UsdtLpaddress;
+    address public EthLpaddress;
     uint256 private ArbpoolLv = 1;
     uint256 private UsdtpoolLv = 1;
     uint256 private EthpoolLv = 1;
     uint256 private ArbLpLv = 1;
     uint256 private UsdtLpLv = 1;
     uint256 private EthLpLv = 1;
-
+    address public ETHtokenAddress;
+    string public name1;
     struct CheckToken {
         address token1;
         address token2;
@@ -36,8 +37,7 @@ contract Pair {
     function makeLpPool(
         address _token1,
         address _token2,
-        address _contractAddress,
-        string memory _tokenName
+        address _contractAddress
     ) external {
         bool isExists = false;
 
@@ -57,21 +57,22 @@ contract Pair {
         require(!isExists, "The pool already exists.");
         if (!isExists) {
             CheckToken memory newPool = CheckToken(_token1, _token2);
+            name1 = SelfToken(_token1).name();
             poolData[_contractAddress][poolIndex] = newPool;
             poolDataNum.push(poolIndex);
             poolIndex += 1;
-            if (Strings.equal(_tokenName, "ARB")) {
+            if (Strings.equal(name1, "ARB")) {
                 ArbLpToken = new SelfToken("ARBLP", "LP");
                 ArbLpaddress = address(ArbLpToken);
                 // ARBtokenAddress = _token1;
-            } else if (Strings.equal(_tokenName, "USDT")) {
+            } else if (Strings.equal(name1, "USDT")) {
                 UsdtLpToken = new SelfToken("USDTLP", "LP");
                 UsdtLpaddress = address(UsdtLpToken);
                 // USDTtokenAddress = _token1;
-            } else if (Strings.equal(_tokenName, "ETH")) {
+            } else if (Strings.equal(name1, "ETH")) {
                 EthLpToken = new SelfToken("ETHLP", "LP");
-                EthLpaddress = address(UsdtLpToken);
-                // ETHtokenAddress = _token1;
+                EthLpaddress = address(EthLpToken);
+                ETHtokenAddress = _token1;
             }
         }
     }
