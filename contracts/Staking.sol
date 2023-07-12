@@ -139,6 +139,7 @@ contract Staking {
             withDrawBool(_userAccount);
             isPossible = stakeInfo[_userAccount][firstTokenName][firstTokenMon]
                 .isWithdrawable;
+            require(isPossible, "check the month");
             if (isPossible) {
                 SelfToken(firstTokenName).approve(_factoryAddress, firstAmount);
                 SelfToken(firstTokenName).transferFrom(

@@ -10,4 +10,6 @@ interface ISwap {
         address _contractAddress,
         uint256 amountA
     ) external;
+
+    function supplyPrice() external view returns (uint256, uint256, uint256);
 }

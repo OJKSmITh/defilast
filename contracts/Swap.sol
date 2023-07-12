@@ -30,13 +30,13 @@ contract Swap {
         feeRecipient = address(this);
         feePercentage = _feePercentage;
         priceOracle = new TokenPriceOracle(EthAddress, UsdtAddress, ArbAddress);
-        // EthPrice = priceOracle.getEthPrice();
-        // UsdtPrice = priceOracle.getUsdtPrice();
-        // ArbPrice = priceOracle.getArbPrice();
-        tokenInfo["ETH"] = 2000000;
-        tokenInfo["ARB"] = 1000;
-        tokenInfo["USDT"] = 1000;
-        tokenInfo["ASD"] = 1000;
+        EthPrice = priceOracle.getEthPrice();
+        UsdtPrice = priceOracle.getUsdtPrice();
+        ArbPrice = priceOracle.getArbPrice();
+        tokenInfo["ETH"] = EthPrice;
+        tokenInfo["ARB"] = ArbPrice;
+        tokenInfo["USDT"] = UsdtPrice;
+        tokenInfo["ASD"] = 99998900;
     }
 
     function differTokenSwap(
@@ -122,5 +122,9 @@ contract Swap {
             feeAmount
         );
         SelfToken(tokenB).transferFrom(_contractAddress, _userAccount, amountB);
+    }
+
+    function supplyPrice() public view returns (uint256, uint256, uint256) {
+        return (ArbPrice, UsdtPrice, EthPrice);
     }
 }

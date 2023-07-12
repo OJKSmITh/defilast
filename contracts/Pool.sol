@@ -26,6 +26,7 @@ contract Pool {
     address public liquidAddress;
     address public swapAddress;
     address public stakingAddress;
+    address public taxAddress;
     // test용
     uint256 public withdrawtoken1;
     uint256 public withdrawAsd;
@@ -54,7 +55,8 @@ contract Pool {
         poolAddress = address(this);
         (pairAddress, liquidAddress, swapAddress) = IDeploy(_deployaddress)
             .featureAddress();
-        (stakingAddress) = ISdeploy(_sDeployAddress).getFeatureAddress();
+        (stakingAddress, taxAddress) = ISdeploy(_sDeployAddress)
+            .getFeatureAddress();
         ETHtokenAddress = _ETHtokenAddress;
     }
 

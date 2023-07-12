@@ -7,6 +7,8 @@ import "./Pool.sol";
 import "./Interface/IPair.sol";
 import "./Interface/IDeploy.sol";
 import "./Interface/ISdeploy.sol";
+import "./Interface/ISwap.sol";
+import "./Interface/ITaxControl.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Factory_v1 {
@@ -25,6 +27,7 @@ contract Factory_v1 {
     address public swapAddress;
     address public poolAddress;
     address public stakingAddress;
+    address public taxAddress;
     // lp 주소
     address public ArbLpaddress; // ARBLpaddress
     address public UsdtLpaddress; // ARBLpaddress
@@ -41,7 +44,10 @@ contract Factory_v1 {
     uint256 public lqAmountUSDT;
     uint256 public lqAmountETH;
     uint256 public lqAmountASD;
-
+    // 코인들 가격
+    uint256 public ArbPrice;
+    uint256 public UsdtPrice;
+    uint256 public EthPrice;
     // check value
     uint256 public backAmount;
     bool public isPossible;
@@ -65,7 +71,8 @@ contract Factory_v1 {
         (VASDtokenAddress) = ISdeploy(_sDeployAddress).tokenAddress();
         (pairAddress, liquidAddress, swapAddress) = IDeploy(_deployAddress)
             .featureAddress();
-        (stakingAddress) = ISdeploy(_sDeployAddress).getFeatureAddress();
+        (stakingAddress, taxAddress) = ISdeploy(_sDeployAddress)
+            .getFeatureAddress();
         ETHtokenAddress = _ETHtokenAddress;
     }
 
@@ -224,5 +231,24 @@ contract Factory_v1 {
     function withDrawStaking() public {
         address userAccount = msg.sender;
         pool.differLpWithdraw(userAccount, factoryAddress);
+    }
+
+    function setPrice() public {
+        (ArbPrice, UsdtPrice, EthPrice) = ISwap(swapAddress).supplyPrice();
+    }
+
+    function claimFee(
+        address _differLp,
+        address _ArbAddress,
+        address _UsdtAddress,
+        address _EthAddress
+    ) public {
+        ITaxControl(taxAddress).accountsMake(_differLp);
+        ITaxControl(taxAddress).claimFee(
+            _differLp,
+            _ArbAddress,
+            _UsdtAddress,
+            _EthAddress
+        );
     }
 }
