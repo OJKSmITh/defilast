@@ -8,7 +8,7 @@ import "./Interface/IPair.sol";
 import "./Interface/IDeploy.sol";
 import "./Interface/ISdeploy.sol";
 import "./Interface/ISwap.sol";
-import "./Interface/ITaxControl.sol";
+import "./Interface/ITaxcontrol.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Factory_v1 {
@@ -48,6 +48,9 @@ contract Factory_v1 {
     uint256 public ArbPrice;
     uint256 public UsdtPrice;
     uint256 public EthPrice;
+    // 유동성 제거시 받는 양
+    uint256 public withdrawtoken1;
+    uint256 public withdrawAsd;
     // check value
     uint256 public backAmount;
     bool public isPossible;
@@ -109,6 +112,19 @@ contract Factory_v1 {
 
     function checkPool() public view returns (address, address, address) {
         return (ArbLpaddress, UsdtLpaddress, EthLpaddress);
+    }
+
+    function checkFToken(
+        address _token1,
+        address _token2,
+        address _token3,
+        address _token4
+    ) public view returns (uint256, uint256, uint256, uint256) {
+        uint256 ARBAmount = SelfToken(_token1).balanceOf(address(this));
+        uint256 USDTAmount = SelfToken(_token2).balanceOf(address(this));
+        uint256 ETHAmount = SelfToken(_token3).balanceOf(address(this));
+        uint256 ASDAmount = SelfToken(_token4).balanceOf(address(this));
+        return (ARBAmount, USDTAmount, ETHAmount, ASDAmount);
     }
 
     function createPool(address _differentToken, address _AsdToken) public {
@@ -250,5 +266,9 @@ contract Factory_v1 {
             _UsdtAddress,
             _EthAddress
         );
+    }
+
+    function getAmount() public {
+        (withdrawtoken1, withdrawAsd) = pool.getAmount();
     }
 }

@@ -123,6 +123,54 @@ contract Liquid {
         }
     }
 
+    function checkRefundAmount(
+        address _lpaddress,
+        uint256 _amount,
+        address _userAccount,
+        address _factoryAddress,
+        address _ASDAddress
+    ) public {
+        require(
+            SelfToken(_lpaddress).totalSupply() >= _amount,
+            "insufficient lp amount"
+        );
+        uint256 lpcalcparams = _amount * 100;
+        uint256 lpcalcpercent = (lpcalcparams / totalLpAmount);
+        if (
+            keccak256(bytes(SelfToken(_lpaddress).name())) ==
+            keccak256(bytes("ARBLP"))
+        ) {
+            withdrawtoken1 =
+                (Lpcalc[_lpaddress][ARBtokenAddress] * lpcalcpercent) /
+                100;
+            withdrawAsd =
+                (Lpcalc[_lpaddress][_ASDAddress] * lpcalcpercent) /
+                100;
+        } else if (
+            keccak256(bytes(SelfToken(_lpaddress).name())) ==
+            keccak256(bytes("USDTLP"))
+        ) {
+            withdrawtoken1 =
+                (Lpcalc[_lpaddress][USDTtokenAddress] * lpcalcpercent) /
+                100;
+            withdrawAsd =
+                (Lpcalc[_lpaddress][_ASDAddress] * lpcalcpercent) /
+                100;
+        } else if (
+            keccak256(bytes(SelfToken(_lpaddress).name())) ==
+            keccak256(bytes("ETHLP"))
+        ) {
+            withdrawtoken1 =
+                (Lpcalc[_lpaddress][ETHtokenAddress] * lpcalcpercent) /
+                100;
+            withdrawAsd =
+                (Lpcalc[_lpaddress][_ASDAddress] * lpcalcpercent) /
+                100;
+        } else {
+            revert("Unsupported token");
+        }
+    }
+
     function doRemoveLiquid(
         address _lpaddress,
         uint256 _amount,
@@ -336,6 +384,10 @@ contract Liquid {
             USDTtokenAddress,
             ETHtokenAddress
         );
+    }
+
+    function provideAmount() public view returns (uint256, uint256) {
+        return (withdrawtoken1, withdrawAsd);
     }
 
     function getDigitCount(uint256 number) public pure returns (uint256) {

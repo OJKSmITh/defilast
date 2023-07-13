@@ -134,6 +134,19 @@ contract Pool {
         }
     }
 
+    function refundAmount(
+        address _differLptoken,
+        uint256 _amount,
+        address _AsdToken
+    ) public {
+        ILiquid(liquidAddress).checkRefundAmount(
+            _differLptoken,
+            _amount,
+            _AsdToken
+        );
+        (withdrawtoken1, withdrawAsd) = ILiquid(liquidAddress).provideAmount();
+    }
+
     function removeLiquid(
         address _differLptoken,
         uint256 _amount,
@@ -219,5 +232,9 @@ contract Pool {
         }
 
         return digitCount - 1;
+    }
+
+    function getAmount() public view returns (uint256, uint256) {
+        return (withdrawtoken1, withdrawAsd);
     }
 }

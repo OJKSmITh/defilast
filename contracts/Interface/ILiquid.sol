@@ -32,11 +32,19 @@ interface ILiquid {
         external
         view
         returns (
-            uint token1,
+            uint with,
             uint asd,
             uint lp,
             address arbtoken,
             address usdttoken,
             address ethtoken
         );
+
+    function checkRefundAmount(
+        address _lpaddress,
+        uint256 _amount,
+        address _ASDAddress
+    ) external;
+
+    function provideAmount() external view returns (uint256, uint256);
 }
