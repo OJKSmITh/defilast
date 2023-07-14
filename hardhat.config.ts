@@ -21,10 +21,10 @@ const config: HardhatUserConfig = {
       gas: 20000000,
       gasPrice: 250000000000
     },
-    abitrum: {
+    arbitrum: {
       url:"https://arbitrum-goerli.publicnode.com",
       chainId:421613,
-      accounts : require("./accounts.json").privatekey,
+      accounts : require("./accounts.json").privateKey,
       gas:20000000,
       gasPrice: 25000000000
     },

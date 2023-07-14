@@ -9,6 +9,7 @@ import "./Interface/IPair.sol";
 import "./Interface/ILiquid.sol";
 import "./Interface/IStaking.sol";
 import "./Interface/ISdeploy.sol";
+import "./Interface/ISdeposit.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Pool {
@@ -27,6 +28,7 @@ contract Pool {
     address public swapAddress;
     address public stakingAddress;
     address public taxAddress;
+    address public sDepositAddress;
     // test용
     uint256 public withdrawtoken1;
     uint256 public withdrawAsd;
@@ -47,6 +49,8 @@ contract Pool {
     uint256 public lqAmountASD3;
     Deploy getData;
 
+    mapping(address => mapping(address => bool)) public testinfo;
+
     constructor(
         address _deployaddress,
         address _sDeployAddress,
@@ -55,8 +59,9 @@ contract Pool {
         poolAddress = address(this);
         (pairAddress, liquidAddress, swapAddress) = IDeploy(_deployaddress)
             .featureAddress();
-        (stakingAddress, taxAddress) = ISdeploy(_sDeployAddress)
-            .getFeatureAddress();
+        (stakingAddress, taxAddress, sDepositAddress) = ISdeploy(
+            _sDeployAddress
+        ).getFeatureAddress();
         ETHtokenAddress = _ETHtokenAddress;
     }
 
@@ -236,5 +241,45 @@ contract Pool {
 
     function getAmount() public view returns (uint256, uint256) {
         return (withdrawtoken1, withdrawAsd);
+    }
+
+    function sDeposit(
+        address _userAccount,
+        address _factoryAddress,
+        address _differToken,
+        uint256 _differAmount
+    ) public {
+        ISdeposit(sDepositAddress).sDeposit(
+            _userAccount,
+            _factoryAddress,
+            _differToken,
+            _differAmount
+        );
+    }
+
+    function Swithdraw(
+        address _userAccount,
+        address _factoryAddress,
+        address _differToken,
+        uint256 _differAmount
+    ) public {
+        ISdeposit(sDepositAddress).withDrawOneToken(
+            _userAccount,
+            _factoryAddress,
+            _differToken,
+            _differAmount
+        );
+    }
+
+    function claimWithdraw(
+        address _userAccount,
+        address _factoryAddress,
+        address _asdToken
+    ) public {
+        ISdeposit(sDepositAddress).sClaim(
+            _userAccount,
+            _factoryAddress,
+            _asdToken
+        );
     }
 }

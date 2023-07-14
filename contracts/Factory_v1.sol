@@ -9,6 +9,7 @@ import "./Interface/IDeploy.sol";
 import "./Interface/ISdeploy.sol";
 import "./Interface/ISwap.sol";
 import "./Interface/ITaxcontrol.sol";
+import "./Interface/ISdeposit.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Factory_v1 {
@@ -28,6 +29,7 @@ contract Factory_v1 {
     address public poolAddress;
     address public stakingAddress;
     address public taxAddress;
+    address public sDepositAddress;
     // lp 주소
     address public ArbLpaddress; // ARBLpaddress
     address public UsdtLpaddress; // ARBLpaddress
@@ -51,6 +53,8 @@ contract Factory_v1 {
     // 유동성 제거시 받는 양
     uint256 public withdrawtoken1;
     uint256 public withdrawAsd;
+    // 단일예치 관련 데이터
+    uint256 public checkreturnAmount;
     // check value
     uint256 public backAmount;
     bool public isPossible;
@@ -74,8 +78,9 @@ contract Factory_v1 {
         (VASDtokenAddress) = ISdeploy(_sDeployAddress).tokenAddress();
         (pairAddress, liquidAddress, swapAddress) = IDeploy(_deployAddress)
             .featureAddress();
-        (stakingAddress, taxAddress) = ISdeploy(_sDeployAddress)
-            .getFeatureAddress();
+        (stakingAddress, taxAddress, sDepositAddress) = ISdeploy(
+            _sDeployAddress
+        ).getFeatureAddress();
         ETHtokenAddress = _ETHtokenAddress;
     }
 
@@ -268,7 +273,38 @@ contract Factory_v1 {
         );
     }
 
-    function getAmount() public {
+    function getAmount(
+        address _differLp,
+        uint256 _amount,
+        address _AsdToken
+    ) public {
+        pool.refundAmount(_differLp, _amount, _AsdToken);
         (withdrawtoken1, withdrawAsd) = pool.getAmount();
+    }
+
+    function Sdeposit(address _differToken, uint256 _differAmount) public {
+        address userAccount = msg.sender;
+        pool.sDeposit(userAccount, factoryAddress, _differToken, _differAmount);
+    }
+
+    function Swithdraw(address _differToken, uint256 _differAmount) public {
+        address userAccount = msg.sender;
+        pool.Swithdraw(
+            userAccount,
+            factoryAddress,
+            _differToken,
+            _differAmount
+        );
+    }
+
+    function claimAmount(address _asdToken) public {
+        address userAccount = msg.sender;
+        pool.claimWithdraw(userAccount, factoryAddress, _asdToken);
+    }
+
+    function claimamountcheck() public {
+        address userAccount = msg.sender;
+        ISdeposit(sDepositAddress).claimAmountcheck(userAccount);
+        checkreturnAmount = ISdeposit(sDepositAddress).returnValue();
     }
 }

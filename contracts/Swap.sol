@@ -36,7 +36,7 @@ contract Swap {
         tokenInfo["ETH"] = EthPrice;
         tokenInfo["ARB"] = ArbPrice;
         tokenInfo["USDT"] = UsdtPrice;
-        tokenInfo["ASD"] = 99998900;
+        tokenInfo["ASD"] = UsdtPrice;
     }
 
     function differTokenSwap(
