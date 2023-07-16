@@ -13,6 +13,8 @@ contract Governance {
     address private timelock;
     address private factory;
 
+    event ExecuteResult(bool success, string message);
+
     struct Receipt {
         bool vote;
         bool agree;
@@ -22,11 +24,16 @@ contract Governance {
         address proposer;
         uint startBlock;
         uint endBlock;
-        bytes callData;
+        bytes callFunction; // ex) createPool_ETH, changeLevel_ETH
         bool canceled;
         bool executed;
         uint256 amountVote;
         mapping(address => Receipt) hasVotes;
+    }
+
+    struct returnValue {
+        bool success;
+        string messege;
     }
 
     address[] public participants;
@@ -39,7 +46,7 @@ contract Governance {
         goverAddress = address(this);
     }
 
-    function propose(address _proposer, bytes memory _callData) public {
+    function propose(address _proposer, string memory _callFunction) public {
         require(
             SelfToken(govToken).balanceOf(_proposer) > 0,
             "Governance : Do not have a vASD token."
@@ -51,11 +58,11 @@ contract Governance {
         newProposal.proposer = _proposer;
         newProposal.startBlock = startBlock;
         newProposal.endBlock = endBlock;
-        newProposal.callData = _callData;
+        newProposal.callFunction = bytes(_callFunction);
         newProposal.canceled = false;
         newProposal.executed = false;
         newProposal.amountVote = 0;
-        newProposal.hasVotes[_proposer] = Receipt(true, true);
+        // newProposal.hasVotes[_proposer] = Receipt(true, true);
         proposalAmount += 1;
 
         SelfToken(govToken)._burn(_proposer, 1); // burn 시킬 govtoken의 가치에 대해서 ?
@@ -74,81 +81,99 @@ contract Governance {
         proposes[_proposal].hasVotes[_participant] = Receipt(true, _agree);
         votes[_proposal].push(_participant);
         proposes[_proposal].amountVote +=
-            uint256(SelfToken(govToken).balanceOf(_participant) * 10 ** 18) /
+            (uint256(SelfToken(govToken).balanceOf(_participant) * 10 ** 18) *
+                100) /
             SelfToken(govToken).totalSupply();
     }
 
     function timelockExecute(uint _proposal) public returns (bool) {
         require(msg.sender == owner, "Governance : only owner");
         // require(proposes[_proposal].endBlock < block.number, "Governance : It hasn't been three days."); //3일 > 17,280
-        if (proposes[_proposal].amountVote > 0.51 * 10 ** 18) {
+        if (proposes[_proposal].amountVote >= 51 * 10 ** 18) {
             proposes[_proposal].executed = true;
-
-            if (proposes[_proposal].callData.length % 2 != 0) {
-                bytes memory paddedCallData = abi.encodePacked(
-                    proposes[_proposal].callData
-                );
-                proposes[_proposal].callData = paddedCallData;
-                Timelock(timelock).queueTransaction(
-                    paddedCallData,
-                    block.timestamp
-                );
-                return true;
-            } else {
-                Timelock(timelock).queueTransaction(
-                    proposes[_proposal].callData,
-                    block.timestamp
-                );
-                return true;
-            }
+            Timelock(timelock).queueTransaction(
+                proposes[_proposal].callFunction,
+                block.timestamp
+            );
+            emit ExecuteResult(true, "success");
         } else {
             proposes[_proposal].canceled = true;
-            return false;
+            emit ExecuteResult(
+                false,
+                "Governance : It's a vote that didn't pass."
+            );
         }
-        //작동 안됨. < 수정 후 반영
-        /*
-                    if (proposes[_proposal].callData.length % 2 != 0) {
-            bytes memory paddedCallData = new bytes(proposes[_proposal].callData.length + 1);
-            proposes[_proposal].callData = paddedCallData;
-            paddedCallData[0] = 0;
-            for (uint256 i = 0; i < proposes[_proposal].callData.length; i++) {
-            paddedCallData[i + 1] = proposes[_proposal].callData[i];
-            }
-            Timelock(timelock).queueTransaction(paddedCallData, block.timestamp);
-            return true;
-            } else {
-            Timelock(timelock).queueTransaction(proposes[_proposal].callData, block.timestamp);
-            return true;
-            }
-        */
     }
 
-    function proposalExecute(uint _proposal) public returns (bool) {
+    function proposalExecute(uint _proposal) public {
         require(msg.sender == owner, "Governance : only owner");
         // require(proposes[_proposal].endBlock < block.number, "Governance : It hasn't been three days.");
-        require(
-            proposes[_proposal].executed,
-            "Governance : It's a vote that didn't pass."
-        );
-        require(
-            Timelock(timelock).executeTransaction(
-                proposes[_proposal].callData,
-                block.timestamp
-            ),
-            "Governance : Timelock is running."
-        );
-        require(
-            Timelock(timelock)
-                .getTransaction(proposes[_proposal].callData)
-                .status
-        );
-        //proposes.callData 실행시켜야함
+        if (proposes[_proposal].executed == true) {
+            if (
+                Timelock(timelock).executeTransaction(
+                    proposes[_proposal].callFunction,
+                    block.timestamp
+                ) == true
+            ) {
+                if (
+                    Timelock(timelock)
+                        .getTransaction(proposes[_proposal].callFunction)
+                        .status == false
+                ) {
+                    emit ExecuteResult(
+                        false,
+                        "Governance : Timelock status false."
+                    );
+                } else {
+                    emit ExecuteResult(true, "success");
+                }
+            } else
+                emit ExecuteResult(false, "Governance : Timelock is running.");
+        } else
+            emit ExecuteResult(
+                false,
+                "Governance : It's a vote that didn't pass."
+            );
+
+        //실행
+    }
+
+    function changeLevel(
+        address _token,
+        uint256 _level,
+        uint256 _proposal
+    ) public {
+        // timeLock queue, time 비교
+        // require(Timelock(timelock).getTransaction(bytes("changeLevel")).status);
+        require(isStatus(proposes[_proposal].callFunction));
+        require(!isClose(proposes[_proposal].callFunction), "Is Closed");
+        Factory_v1(factory).poolLvup(_token, _level);
+        Timelock(timelock).closePropose(proposes[_proposal].callFunction);
+        emit ExecuteResult(true, "success");
+        //factory 로 보내서 levelchange 시키는것, 의제에 의해서 실행될것.
+        //factory 에 보내야할것 > ca랑 level 입력해서 보내주기 > callData
+    }
+
+    function createPool(
+        address _differentToken,
+        address _AsdToken,
+        uint256 _proposal
+    ) public returns (bool) {
+        // require(Timelock(timelock).getTransaction(bytes("createPool")).status);
+        // timeLock queue, time 비교
+        require(isStatus(proposes[_proposal].callFunction));
+        require(!isClose(proposes[_proposal].callFunction), "Is Closed");
+        Factory_v1(factory).createPool(_differentToken, _AsdToken);
+        Timelock(timelock).closePropose(proposes[_proposal].callFunction);
         return true;
     }
 
-    function changeLevel(address token) public {
-        //factory 로 보내서 levelchange 시키는것, 의제에 의해서 실행될것.
-        //factory 에 보내야할것 > ca랑 level 입력해서 보내주기 > callData
+    function isStatus(bytes memory funcName) public view returns (bool) {
+        return Timelock(timelock).getTransaction(funcName).status;
+    }
+
+    function isClose(bytes memory funcName) public view returns (bool) {
+        return Timelock(timelock).getTransaction(funcName).close;
     }
 
     function changeOwner(address _newOwner) private {
@@ -165,6 +190,11 @@ contract Governance {
         timelock = _timelock;
     }
 
+    function setFactoryAddress(address _factory) public {
+        require(owner == msg.sender);
+        factory = _factory;
+    }
+
     function getProposal(
         uint _idx
     )
@@ -177,14 +207,28 @@ contract Governance {
             proposal.proposer,
             proposal.startBlock,
             proposal.endBlock,
-            proposal.callData,
+            proposal.callFunction,
             proposal.canceled,
             proposal.executed,
             proposal.amountVote
         );
     }
 
-    function getCallData(uint _proposal) public view returns (bytes memory) {
-        return proposes[_proposal].callData;
+    function getCallFunction(
+        uint _proposal
+    ) public view returns (bytes memory) {
+        return proposes[_proposal].callFunction;
+    }
+
+    function getHasVote(uint _proposal) public view returns (bool) {
+        return proposes[_proposal].hasVotes[msg.sender].vote;
+    }
+
+    function checkedToken(address proposal) public view returns (uint256) {
+        return SelfToken(govToken).balanceOf(proposal);
+    }
+
+    function getTokenAddress() public view returns (address) {
+        return govToken;
     }
 }

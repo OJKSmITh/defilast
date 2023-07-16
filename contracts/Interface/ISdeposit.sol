@@ -32,4 +32,9 @@ interface ISdeposit {
     ) external;
 
     function returnValue() external view returns (uint256);
+
+    function getAccountBalance(
+        address _userAccount,
+        address _differToken
+    ) external view returns (uint256);
 }

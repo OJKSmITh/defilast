@@ -31,6 +31,7 @@ contract Sdeposit {
         depositInfo[_userAccount].differToken = _differToken;
         depositInfo[_userAccount].depositAmount += _differAmount;
         depositInfo[_userAccount].deposittime = block.timestamp;
+        accountBalance = depositInfo[_userAccount].depositAmount;
         SelfToken(_differToken).transferFrom(
             _userAccount,
             _factoryAddress,
@@ -45,6 +46,7 @@ contract Sdeposit {
         uint256 _differAmount
     ) public {
         depositInfo[_userAccount].depositAmount -= _differAmount;
+        accountBalance = depositInfo[_userAccount].depositAmount;
         SelfToken(_differToken).transferFrom(
             _factoryAddress,
             _userAccount,
@@ -94,5 +96,15 @@ contract Sdeposit {
 
     function returnValue() public view returns (uint256) {
         return checkAmount;
+    }
+
+    function getAccountBalance(
+        address _userAccount,
+        address _differToken
+    ) public returns (uint256) {
+        if (depositInfo[_userAccount].differToken == _differToken) {
+            accountBalance = depositInfo[_userAccount].depositAmount;
+        }
+        return accountBalance;
     }
 }

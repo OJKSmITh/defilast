@@ -55,6 +55,7 @@ contract Factory_v1 {
     uint256 public withdrawAsd;
     // 단일예치 관련 데이터
     uint256 public checkreturnAmount;
+    uint256 public accountBalance;
     // check value
     uint256 public backAmount;
     bool public isPossible;
@@ -249,9 +250,9 @@ contract Factory_v1 {
         );
     }
 
-    function withDrawStaking() public {
+    function withDrawStaking(address _differLp, uint256 _amount) public {
         address userAccount = msg.sender;
-        pool.differLpWithdraw(userAccount, factoryAddress);
+        pool.differLpWithdraw(userAccount, factoryAddress, _differLp, _amount);
     }
 
     function setPrice() public {
@@ -302,9 +303,13 @@ contract Factory_v1 {
         pool.claimWithdraw(userAccount, factoryAddress, _asdToken);
     }
 
-    function claimamountcheck() public {
+    function claimamountcheck(address _differToken) public {
         address userAccount = msg.sender;
         ISdeposit(sDepositAddress).claimAmountcheck(userAccount);
         checkreturnAmount = ISdeposit(sDepositAddress).returnValue();
+        accountBalance = ISdeposit(sDepositAddress).getAccountBalance(
+            userAccount,
+            _differToken
+        );
     }
 }

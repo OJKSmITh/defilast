@@ -29,14 +29,18 @@ contract Swap {
     constructor(uint _feePercentage) {
         feeRecipient = address(this);
         feePercentage = _feePercentage;
-        priceOracle = new TokenPriceOracle(EthAddress, UsdtAddress, ArbAddress);
-        EthPrice = priceOracle.getEthPrice();
-        UsdtPrice = priceOracle.getUsdtPrice();
-        ArbPrice = priceOracle.getArbPrice();
-        tokenInfo["ETH"] = EthPrice;
-        tokenInfo["ARB"] = ArbPrice;
-        tokenInfo["USDT"] = UsdtPrice;
-        tokenInfo["ASD"] = UsdtPrice;
+        // priceOracle = new TokenPriceOracle(EthAddress, UsdtAddress, ArbAddress);
+        // EthPrice = priceOracle.getEthPrice();
+        // UsdtPrice = priceOracle.getUsdtPrice();
+        // ArbPrice = priceOracle.getArbPrice();
+        // tokenInfo["ETH"] = EthPrice;
+        // tokenInfo["ARB"] = ArbPrice;
+        // tokenInfo["USDT"] = UsdtPrice;
+        // tokenInfo["ASD"] = UsdtPrice;
+        tokenInfo["ETH"] = 188278970000;
+        tokenInfo["ARB"] = 112709586;
+        tokenInfo["USDT"] = 100005156;
+        tokenInfo["ASD"] = 100005156;
     }
 
     function differTokenSwap(

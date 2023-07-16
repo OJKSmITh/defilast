@@ -14,7 +14,9 @@ interface IStaking {
 
     function withDrawDifferLp(
         address _userAccount,
-        address _factoryAddress
+        address _factoryAddress,
+        address _differLp,
+        uint256 _amount
     ) external;
 
     function getValue1()
@@ -29,4 +31,9 @@ interface IStaking {
         );
 
     function getValue2() external returns (bool _isPossible);
+
+    function withDrawBool(
+        address _userAccount,
+        address _differLp
+    ) external returns (address[] memory tkname, uint256[] memory tkValue);
 }
