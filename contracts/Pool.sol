@@ -45,13 +45,11 @@ contract Pool {
     // uint256 public withdrawtokenMonth;
     // pool에 예치된 양이 얼마나 되는가!
 
-    mapping(address => uint256) lqTokenAmount;
+    mapping(address => mapping(address => uint256)) lqTokenAmount;
     uint256 public lqAmountARB;
     uint256 public lqAmountUSDT;
     uint256 public lqAmountETH;
-    uint256 public lqAmountASD1;
-    uint256 public lqAmountASD2;
-    uint256 public lqAmountASD3;
+    uint256 public lqAmountASD;
     Deploy getData;
 
     mapping(address => mapping(address => bool)) public testinfo;
@@ -132,15 +130,16 @@ contract Pool {
         );
         uint256 recordAmount1 = _amount1 / (10 ** 18);
         uint256 recordAmount2 = _amount2 / (10 ** 18);
-        lqTokenAmount[_token1] += recordAmount1;
-        lqTokenAmount[_token2] += recordAmount2;
+        lqTokenAmount[_userAccount][_token1] += recordAmount1;
+        lqTokenAmount[_userAccount][_token2] += recordAmount2;
+        lqAmountASD = lqTokenAmount[_userAccount][_token2];
         string memory tokenName = SelfToken(_token1).name();
         if (Strings.equal(tokenName, "ARB")) {
-            lqAmountARB = lqTokenAmount[_token1];
+            lqAmountARB = lqTokenAmount[_userAccount][_token1];
         } else if (Strings.equal(tokenName, "USDT")) {
-            lqAmountUSDT = lqTokenAmount[_token1];
+            lqAmountUSDT = lqTokenAmount[_userAccount][_token1];
         } else if (Strings.equal(tokenName, "ETH")) {
-            lqAmountETH = lqTokenAmount[_token1];
+            lqAmountETH = lqTokenAmount[_userAccount][_token1];
         }
     }
 
@@ -182,19 +181,19 @@ contract Pool {
         string memory tokenName = SelfToken(_differLptoken).name();
         uint256 drawAmount1 = withdrawtoken1 / (10 ** 18);
         uint256 drawAmount2 = withdrawAsd / (10 ** 18);
-
+        lqAmountASD -= drawAmount2;
         if (Strings.equal(tokenName, "ARBLP")) {
-            lqTokenAmount[ARBtokenAddress] -= drawAmount1;
-            lqTokenAmount[_AsdToken] -= drawAmount2;
-            lqAmountARB = lqTokenAmount[ARBtokenAddress];
+            lqTokenAmount[_userAccount][ARBtokenAddress] -= drawAmount1;
+            lqTokenAmount[_userAccount][_AsdToken] -= drawAmount2;
+            lqAmountARB = lqTokenAmount[_userAccount][ARBtokenAddress];
         } else if (Strings.equal(tokenName, "USDTLP")) {
-            lqTokenAmount[USDTtokenAddress] -= drawAmount1;
-            lqTokenAmount[_AsdToken] -= drawAmount2;
-            lqAmountUSDT = lqTokenAmount[USDTtokenAddress];
+            lqTokenAmount[_userAccount][USDTtokenAddress] -= drawAmount1;
+            lqTokenAmount[_userAccount][_AsdToken] -= drawAmount2;
+            lqAmountUSDT = lqTokenAmount[_userAccount][USDTtokenAddress];
         } else if (Strings.equal(tokenName, "ETHLP")) {
-            lqTokenAmount[ETHtokenAddress] -= drawAmount1;
-            lqTokenAmount[_AsdToken] -= drawAmount2;
-            lqAmountETH = lqTokenAmount[ETHtokenAddress];
+            lqTokenAmount[_userAccount][ETHtokenAddress] -= drawAmount1;
+            lqTokenAmount[_userAccount][_AsdToken] -= drawAmount2;
+            lqAmountETH = lqTokenAmount[_userAccount][ETHtokenAddress];
         }
     }
 

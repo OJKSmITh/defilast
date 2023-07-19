@@ -10,14 +10,14 @@ contract Sdeposit {
         uint256 depositAmount;
         uint256 deposittime;
     }
-    uint256 private testMonth = 5;
-    uint256 private test2Month = 2 minutes;
-    uint256 private test3Month = 300;
-    uint256 private Month = 30 days;
-    uint256 private tMonth = 2 * Month;
-    uint256 private thirdMonth = 3 * Month;
-    uint256 private accountBalance;
-    uint256 private checkAmount;
+    uint256 public testMonth = 5;
+    uint256 public test2Month = 2 minutes;
+    uint256 public test3Month = 300;
+    uint256 public Month = 30 days;
+    uint256 public tMonth = 2 * Month;
+    uint256 public thirdMonth = 3 * Month;
+    uint256 public accountBalance;
+    uint256 public checkAmount;
     mapping(address => userInfo) public depositInfo;
 
     constructor() {}
@@ -32,6 +32,7 @@ contract Sdeposit {
         depositInfo[_userAccount].depositAmount += _differAmount;
         depositInfo[_userAccount].deposittime = block.timestamp;
         accountBalance = depositInfo[_userAccount].depositAmount;
+
         SelfToken(_differToken).transferFrom(
             _userAccount,
             _factoryAddress,
@@ -80,6 +81,7 @@ contract Sdeposit {
             block.timestamp >= userTime + testMonth &&
             block.timestamp < userTime + test2Month
         ) {
+            SelfToken(_asdToken).approve(address(this), rateAmount);
             SelfToken(_asdToken).transferFrom(
                 _factoryAddress,
                 _userAccount,

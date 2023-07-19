@@ -41,6 +41,10 @@ contract Factory_v1 {
     uint256 public UsdtLpLv;
     uint256 public EthpoolLv;
     uint256 public EthLpLv;
+    // sDeposit
+    uint256 public sArb;
+    uint256 public sUsdt;
+    uint256 public sEth;
     // liqudity 관련 value
     uint256 public lqAmountARB;
     uint256 public lqAmountUSDT;
@@ -59,7 +63,7 @@ contract Factory_v1 {
     // check value
     uint256 public backAmount;
     bool public isPossible;
-    Pool pool;
+    Pool public pool;
 
     struct LvContent {
         uint256 poolLv;
@@ -172,10 +176,13 @@ contract Factory_v1 {
         string memory tokenName = SelfToken(_differentToken).name();
         if (Strings.equal(tokenName, "ARB")) {
             lqAmountARB = pool.lqAmountARB();
+            lqAmountASD = pool.lqAmountASD();
         } else if (Strings.equal(tokenName, "USDT")) {
             lqAmountUSDT = pool.lqAmountUSDT();
+            lqAmountASD = pool.lqAmountASD();
         } else if (Strings.equal(tokenName, "ETH")) {
             lqAmountETH = pool.lqAmountETH();
+            lqAmountASD = pool.lqAmountASD();
         }
     }
 
@@ -225,10 +232,13 @@ contract Factory_v1 {
         string memory tokenName = SelfToken(_differLpToken).name();
         if (Strings.equal(tokenName, "ARBLP")) {
             lqAmountARB = pool.lqAmountARB();
+            lqAmountASD = pool.lqAmountASD();
         } else if (Strings.equal(tokenName, "USDTLP")) {
             lqAmountUSDT = pool.lqAmountUSDT();
+            lqAmountASD = pool.lqAmountASD();
         } else if (Strings.equal(tokenName, "ETHLP")) {
             lqAmountETH = pool.lqAmountETH();
+            lqAmountASD = pool.lqAmountASD();
         }
     }
 
@@ -286,6 +296,14 @@ contract Factory_v1 {
     function Sdeposit(address _differToken, uint256 _differAmount) public {
         address userAccount = msg.sender;
         pool.sDeposit(userAccount, factoryAddress, _differToken, _differAmount);
+        string memory tokenName = SelfToken(_differToken).name();
+        if (Strings.equal(tokenName, "ARB")) {
+            sArb += _differAmount / (10 ** 18);
+        } else if (Strings.equal(tokenName, "USDT")) {
+            sUsdt += _differAmount / (10 ** 18);
+        } else if (Strings.equal(tokenName, "ETH")) {
+            sEth += _differAmount / (10 ** 18);
+        }
     }
 
     function Swithdraw(address _differToken, uint256 _differAmount) public {
@@ -296,6 +314,14 @@ contract Factory_v1 {
             _differToken,
             _differAmount
         );
+        string memory tokenName = SelfToken(_differToken).name();
+        if (Strings.equal(tokenName, "ARB")) {
+            sArb -= _differAmount / (10 ** 18);
+        } else if (Strings.equal(tokenName, "USDT")) {
+            sUsdt -= _differAmount / (10 ** 18);
+        } else if (Strings.equal(tokenName, "ETH")) {
+            sEth -= _differAmount / (10 ** 18);
+        }
     }
 
     function claimAmount(address _asdToken) public {
